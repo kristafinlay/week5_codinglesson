@@ -46,10 +46,54 @@ ggplot(data = chinstraps, aes(sample = body_mass_g))+
 
 #see they are as close to normally distributed as you can hope. Both histogram and qq telling me both the distributions are pretty close to normal.
 
-## Need to get some descriptive statistics: (uses group_by and summarize to recognize groups within a variable or variables designate and then puts functions we call in summarize, condenses the calculations for each group into values and into a summary table)
+## Need to get some descriptive statistics: (uses group_by and summarize to recognize groups within a variable or variables designate and then puts functions we call in summarize (to make columns in table), condenses the calculations for each group into values and into a summary table)
+chinstraps %>% 
+  group_by(sex) %>% 
+  summarize(mean_mass = mean(body_mass_g),
+            median_mass = median(body_mass_g),
+            sd_mass = sd(body_mass_g),
+            sample_size = n())
+  
+#see the means are a bit different, median follows the mean differences, symmetric distribution, all meaningful to us.We have finished our summary statistics.
+```
 
+### comparing sizes between male and female chinstap penguins
+Get vectors of body_mass_g for male and female chinstrap penguins separately (see lab week 4.
+
+```{r}
+chinstraps_f <- chinstraps %>% 
+  filter(sex == "female") %>% 
+  pull(body_mass_g)
+
+
+chinstraps_m <- chinstraps %>% 
+  filter(sex == "male") %>% 
+  pull(body_mass_g)
+
+#Now have vectors to run two sample t-tests
+```
+
+###Run a couple t-tests, in a couple different ways
+
+1. Is there a significant difference in body mass between male and female Chinstrap penguins? 
+(do we have enough evidence to make us think that means difference is far enough from zero, that we think the population mean mass is different from the groups that these were drawn from- two sided t-test)
+
+```{r}
+chinstrap_ttest <- t.test(chinstraps_f, chinstraps_m)
+chinstrap_ttest
+
+
+# Then need to find the Cohen d Effect size (metric used ti describe the magnitude of differences between groups)
+cohen.d(chinstraps_f, chinstraps_m)
 
 ```
+Are male chinstrap penguins significantly larger (body mass) then female chinstrap penguins? (one sided test, only interested in tail of t- distribution' is mean male mass significantly greater
+
+)
+```{r}
+t.test(chinstraps_m, chinstraps_f, alternative = "greater")
+```
+
 
 
 
