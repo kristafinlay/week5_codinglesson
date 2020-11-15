@@ -98,4 +98,124 @@ t.test(chinstraps_m, chinstraps_f, alternative = "greater")
 
 
 
+## One- way ANOVA
+(Way to compare means across more than two groups; single variable with discrete groups within and a continued measured variable, and we want to explore differences across our different groups across factors for the mean of that other variable that we have recorded values for). 
+We are looking at flipper length between the three species of penguins and only females.
+
+###Data Exploration
+1. Table of counts by penguin species and sex
+
+```{r}
+#shows the type of penguins, and how many of each sex
+penguin_counts <- penguins %>% 
+  count(species, sex)
+
+penguin_counts
+```
+
+
+Create a subset of only female penguins
+
+```{r}
+#Explored for normallity and checked for distribution in this set
+
+penguin_f <- penguins %>% 
+  filter(sex == "female")
+
+#Then look at the distributions (they look somewhat symmetric, bell shaped, they close to normally distributed)
+ggplot(data = penguin_f, aes(x = flipper_length_mm))+
+  geom_histogram(aes(fill = species))+
+  facet_wrap(~species, scales = "free")
+
+
+#Look at other ways to see normallity and distribution with a qq plot (then can see they are close to linear and drawn for a normally distributed population, so very close to normally distributed groups)
+ggplot(data = penguin_f, aes(sample = flipper_length_mm))+
+  geom_qq(aes(color = species))+
+  facet_wrap(~species, scales = "free")
+
+```
+
+###Find Summary statistics, nice table with information (check for equal variances too)
+
+Starting from penguins_f, create a summary table that groups by species, and returns the following:
+- mean of flipper length
+- sd of flipper length
+- sample size
+- variance "var"
+- standard error = sd / sqrt (n)
+
+```{r}
+penguin_f_summary <- penguin_f %>% 
+  group_by(species) %>% 
+  summarize(mean_flipper_length = mean(flipper_length_mm),
+            sd_flipper_length = sd(flipper_length_mm),
+            sample_size = n(),
+            se_flipper_length = sd(flipper_length_mm)/sqrt(n()),
+            var_flipper_length = var(flipper_length_mm))
+
+penguin_f_summary
+
+
+
+#How to run a Levene's test for equal variance (use with caution b/c as sample size gets larger, will detect difference in variance, even if minimal and trivial) This is looking at variance in flipper length as a function of species, adn where located
+
+leveneTest(flipper_length_mm ~ species, data = penguin_f)
+
+```
+
+
+###Make a beeswarm plot 
+(with mean and plus or minus standard deviation because it can be useful to show- can be considered type of visualization that shows summary info too) 
+This will include different geoms are going to look at different data frames
+
+```{r}
+#gives you actual values of your observations, and can show the greater densities of observations are. Then I am adding another geom to add some summary statistics (points of mean values), and then add wisker with errorbar of + and - sd
+ggplot()+
+  geom_beeswarm(data = penguin_f, aes(x = species, y = flipper_length_mm), 
+                color = "gray70", 
+                size = 3, 
+                alpha = 0.5)+
+  geom_point(data = penguin_f_summary, aes(x = species, y = mean_flipper_length),
+             size = 4)+
+  geom_errorbar(data = penguin_f_summary,
+                aes(x = species, 
+                    ymin = mean_flipper_length - sd_flipper_length,
+                    ymax = mean_flipper_length + sd_flipper_length),
+                width = 0.1)+
+  theme_light()
+
+# So now have actual observations plotted, and then mean and sd information. We have done a ton of exploratory data vizualizations, thought about the data
+```
+
+
+### One-way ANOVA
+
+```{r}
+#compare flipper length as a function of species, only female data
+penguin_aov <- aov(flipper_length_mm ~ species, data = penguin_f)
+summary(penguin_aov)
+
+#Run a post-hoc Tukeys HSD on the avo name set
+TukeyHSD(penguin_aov)
+
+```
+All of the p adj are below 0.5, so significant difference between mean flipper length between all the penguin species, female mean flipper differs between each species for all para wise combinations.
+
+Conclusion: Mean flipper lengths differed significantly between Chinstrap (mean +/- se), Gentoo (mean +/- se), and Adelie (mean +/- se) penguins (one-way ANOVA with post-hoc Tukey’s HSD, F(df) = ??, p < 0.05).
+
+
+Enough evidence to reject the null hypothesis, that our samples are drawn from populations with the same mean, which means that our conclusion is that there is a significant difference in mean flipper length between all female penguin species
+
+
+###If trying to do anova for a very unbalanced design, very different sample sizes, groups, distribution, that you are trying a anova
+
+###Type III Anova with the car package (will create linear model to use)
+
+```{r}
+penguin_lm <- lm(flipper_length_mm ~ species, data = penguin_f)
+penguin_aov_t3 <- Anova(penguin_lm, type = "III")
+penguin_aov_t3
+```
+
+
 
