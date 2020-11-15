@@ -1,0 +1,57 @@
+---
+title: "Penguin Size Comparisons"
+author: "Krista Finlay"
+date: "11/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(palmerpenguins)
+library(effsize)
+library(broom)
+library(ggbeeswarm)
+library(car)
+```
+
+# Part 1: T- tests 
+(used to compare means between two different groups. Asking questions of do we have enough evidence to make us think that these are drawn from populations that have different means or am I going to stick with the null hypothesis that these were drawn from populations with the same mean )
+
+Mass comparison: Between male and female Chinstrap penguins
+
+First do some exploring in exploratory code chunk
+
+```{r}
+#create subset only for chinstrap penguins
+chinstraps <- penguins %>% 
+  filter(species == "Chinstrap")
+
+#Make some basic plots to explore normality and distribution, and get some descriptive statistics. Two types of tests of exploratory visualizations:
+
+##Histograms (use facet plots based on groups in variable)
+ggplot(data = chinstraps, aes(x = body_mass_g))+
+  geom_histogram(bins = 10)+
+  facet_wrap(~sex)
+
+#two distributions that look somewhat close to bell shape, mean would be a reasonable metric of central tendency, bell shapes somewhat symmetric, central tendency of the male weight a bit higher around 4000 with the female around 3500
+
+
+##Quantile- quantile plot  (explore normality- compare our sample to data that if drawn from a normal distribution. The closer to linear a qq plot gets, the closer our sample is to normally distributed)
+
+#QQ plot (check for normality)
+ggplot(data = chinstraps, aes(sample = body_mass_g))+
+  geom_qq()+
+  facet_wrap(~sex)
+
+#see they are as close to normally distributed as you can hope. Both histogram and qq telling me both the distributions are pretty close to normal.
+
+## Need to get some descriptive statistics: (uses group_by and summarize to recognize groups within a variable or variables designate and then puts functions we call in summarize, condenses the calculations for each group into values and into a summary table)
+
+
+```
+
+
+
+
+
